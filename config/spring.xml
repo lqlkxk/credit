@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+        
+	<!-- 加载jdbc.properties文件 -->  
+   	<context:property-placeholder location="classpath:jdbc.properties"/>
+   	
+   	<!-- 创建c3po连接池 -->
+   	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+   		<property name="jdbcUrl" value="${jdbc.url}"/>
+		<property name="driverClass" value="${jdbc.driver}"/>
+		<property name="user" value="${jdbc.user}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<property name="initialPoolSize" value="${c3p0.initialPoolSize}"/>
+		<property name="minPoolSize" value="${c3p0.minPoolSize}"/>
+		<property name="acquireIncrement" value="${c3p0.acquireIncrement}"/>
+    	<property name="maxPoolSize" value="${c3p0.maxPoolSize}"/>
+    	<property name="maxIdleTime" value="${c3p0.maxIdleTime}"/>
+    	<property name="acquireRetryAttempts" value="${c3p0.acquireRetryAttempts}"/>
+    	<property name="acquireRetryDelay" value="${c3p0.acquireRetryDelay}"/>
+    	<property name="idleConnectionTestPeriod" value="${c3p0.idleConnectionTestPeriod}"/>
+    	<property name="preferredTestQuery" value="SELECT 1"/>
+   	</bean>
+    
+    <!-- Spring 整合hibernate -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean" name="sessionFactory">
+    	<property name="dataSource" ref="dataSource"></property>
+    	<property name="hibernateProperties">
+    		<props>
+    			<!-- 是否输出sql语句 -->
+    			<prop key="hibernate.show_sql">true</prop>
+    			<!-- 自动维护表 -->
+    			<!-- <prop key="hibernate.hbm2ddl.auto">update</prop> -->
+    		</props>
+    	</property>
+    	<!-- 扫描实体类的包 -->
+    	<property name="packagesToScan">
+    		<list>
+    			<value>com.sun.*.vo</value>
+    		</list>
+    	</property>
+    </bean>
+    
+    <!-- 开启事务扫描 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <bean id="transactionManager" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+    	<property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+    
+    <!-- 扫描Spring的注解 -->
+    <context:component-scan base-package="com.sun.*.service,com.sun.*.dao,com.sun.system"></context:component-scan>
+    
+</beans>
